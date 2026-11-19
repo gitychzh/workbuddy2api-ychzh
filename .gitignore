@@ -44,3 +44,23 @@ docs/
 /cmd/desktopverify*/
 *.zip
 server.exe
+
+# ---- 本机运维产物（2026-11 多账号池部署沉淀）----
+# 账号凭证与运行时状态（明文 token，绝不入库）
+auths/
+data/
+login_state*.json
+sms_code.txt
+login_*.log
+# 账号隔离工作目录（cookie/指纹/密钥材料）
+/13915668257/
+/15850822387/
+/15312701232/
+# 运维截图与临时产物
+*.png
+*.log
+# ECS 侧真实配置（含 api_key；入库用 ecs/config.json 脱敏模板）
+ecs/config.json
+# 跨平台构建产物
+wb2api_linux
+*.b64

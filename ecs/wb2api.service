@@ -1,0 +1,21 @@
+[Unit]
+Description=WorkBuddy2API Panel - CodeBuddy to OpenAI-compatible gateway
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=wb2api
+Group=wb2api
+WorkingDirectory=/opt/wb2api
+ExecStart=/opt/wb2api/wb2api -config /opt/wb2api/config.json
+Restart=on-failure
+RestartSec=5
+Environment=TZ=Asia/Shanghai
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/opt/wb2api
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
