@@ -59,8 +59,9 @@ login_*.log
 # 运维截图与临时产物
 *.png
 *.log
-# ECS 侧真实配置（含 api_key；入库用 ecs/config.json 脱敏模板）
+# ECS 侧真实配置（含 api_key；入库只用 config.example.json 脱敏模板）
 ecs/config.json
+ecs/config.1114.json
 # 跨平台构建产物
 wb2api_linux
 *.b64

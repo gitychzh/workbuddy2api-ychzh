@@ -1,7 +1,12 @@
 # syntax=docker/dockerfile:1
 FROM golang:1.23-alpine AS build
+# 国内构建节点无法访问 proxy.golang.org（实测超时），默认走七牛镜像；
+# 海外节点可 --build-arg GOPROXY=https://proxy.golang.org,direct 覆盖。
+ARG GOPROXY=https://goproxy.cn,direct
+ENV GOPROXY=${GOPROXY}
 WORKDIR /src
-COPY go.mod ./
+# go.sum 一并前置：缺它时 go mod download 无法复用校验和、且模块缓存层无法命中。
+COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 # 一次编译全部二进制（工具进镜像，容器内可直接跑脚本）。全部 -trimpath -s -w。
@@ -25,11 +30,14 @@ COPY --from=build /out/login /app/login
 COPY --from=build /out/credit /app/credit
 COPY login.sh signin.sh credit.sh /app/
 COPY scripts/probe_active.py /app/scripts/probe_active.py
+COPY scripts/docker-healthcheck.sh /app/scripts/docker-healthcheck.sh
 RUN sed -i 's/\r$//' /app/login.sh /app/signin.sh /app/credit.sh && chmod 755 /app/login.sh /app/signin.sh /app/credit.sh
 # 镜像不带真实配置：落 example 作为默认（生产由挂载卷 /app/config.json 覆盖）
 COPY config.example.json /app/config.json
+RUN chmod 755 /app/scripts/docker-healthcheck.sh
 USER app
+# EXPOSE 仅文档性提示；实际监听端口由挂载的 config.json listen 决定。
 EXPOSE 7863
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
-  CMD wget -qO- http://127.0.0.1:7863/healthz || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+  CMD ["/app/scripts/docker-healthcheck.sh"]
 ENTRYPOINT ["/app/wb2api", "-config", "/app/config.json"]

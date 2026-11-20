@@ -1,0 +1,22 @@
+services:
+  wb2api:
+    build:
+      context: ./src
+      args:
+        # 国内节点无法访问 proxy.golang.org；海外节点可覆盖为官方源
+        GOPROXY: https://goproxy.cn,direct
+    image: wb2api:1.11.10-panel
+    container_name: wb2api
+    restart: unless-stopped
+    # 容器内以 app(10001) 运行；宿主机挂载目录需 chown -R 10001:10001
+    user: "10001:10001"
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      # 监听地址由 config.json 的 listen 决定（0.0.0.0:1114），此处仅做端口映射。
+      - "1114:1114"
+    volumes:
+      - ./auths:/app/auths
+      - ./data:/app/data
+      # 挂载真实配置（含 api_key）。必须是文件——缺失时 Docker 会建成目录导致启动失败。
+      - ./config.json:/app/config.json
